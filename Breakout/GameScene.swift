@@ -12,6 +12,7 @@ class GameScene: SKScene {
     var ball = SKShapeNode()
     var paddle = SKSpriteNode()
     var brick = SKSpriteNode()
+    var lozeZone = SKSpriteNode()
     
     override func didMove(to view: SKView) {
         // this stuff hapens once (when the app opens)
@@ -24,6 +25,7 @@ class GameScene: SKScene {
         makeBall()
         makePaddle()
         makeBrick()
+        makeLozeZOne()
     }
     
     func createBackground() {
@@ -85,6 +87,14 @@ class GameScene: SKScene {
         brick.physicsBody = SKPhysicsBody(rectangleOf: brick.size)
         brick.physicsBody?.isDynamic = false
         addChild(brick)
+    }
+    func makeLozeZOne() {
+        lozeZone = SKSpriteNode(color: .red, size: CGSize(width: frame.width, height: 50))
+        lozeZone.position = CGPoint(x: frame.midX, y: frame.minY + 25)
+        lozeZone.name = "lozeZone"
+        lozeZone.physicsBody = SKPhysicsBody(rectangleOf: lozeZone.size)
+        lozeZone.physicsBody?.isDynamic = false
+        addChild(lozeZone)
     }
     
 }
