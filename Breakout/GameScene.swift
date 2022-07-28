@@ -13,6 +13,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var paddle = SKSpriteNode()
     var brick = SKSpriteNode()
     var lozeZone = SKSpriteNode()
+    var playLabel = SKLabelNode()
+    var scoreLabel = SKLabelNode()
+    var livesLabel = SKLabelNode()
+    var playingGame = false
+    var score = 0
+    var lives = 3
     
     override func didMove(to view: SKView) {
         // this stuff hapens once (when the app opens)
@@ -20,15 +26,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         self.physicsBody = SKPhysicsBody(edgeLoopFrom: frame)
         createBackground()
         resetGame()
-        makeLozeZOne()
-        kickBall()
+        makeLozeZone()
+        makeLabels()
     }
     
     func resetGame() {
-        //befor each game stars
+        //before each game stars
         makeBall()
         makePaddle()
         makeBrick()
+        updateLabels()
     }
     
     func createBackground() {
@@ -91,7 +98,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         brick.physicsBody?.isDynamic = false
         addChild(brick)
     }
-    func makeLozeZOne() {
+    
+    func makeLozeZone() {
         lozeZone = SKSpriteNode(color: .red, size: CGSize(width: frame.width, height: 50))
         lozeZone.position = CGPoint(x: frame.midX, y: frame.minY + 25)
         lozeZone.name = "lozeZone"
@@ -99,21 +107,87 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         lozeZone.physicsBody?.isDynamic = false
         addChild(lozeZone)
     }
+    
+    func makeLabels() {
+        playLabel.fontSize = 24
+        playLabel.text = "Tap to start"
+        playLabel.fontName = "Arial"
+        playLabel.position = CGPoint(x: frame.midX, y: frame.midY - 50)
+        playLabel.name = "playLabel"
+        addChild(playLabel)
+        
+        livesLabel.fontSize = 18
+        livesLabel.fontColor = .black
+        livesLabel.position = CGPoint(x: frame.minX + 50, y: frame.minY + 18)
+        addChild(livesLabel)
+        
+        scoreLabel.fontSize = 18
+        scoreLabel.fontColor = .black
+        scoreLabel.position = CGPoint(x: frame.minX - 50, y: frame.minY + 18)
+        addChild(scoreLabel)
+    }
+    
     func kickBall() {
         ball.physicsBody?.isDynamic = true
         ball.physicsBody?.applyImpulse(CGVector(dx: 3, dy: 5))
     }
     
+    func updateLabels() {
+        scoreLabel.text = "Score \(score)"
+        livesLabel.text = "Lives \(lives)"
+        
+    }
+    
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
             let location = touch.location(in: self)
-            paddle.position.x = location.x
+            if playingGame {
+                paddle.position.x = location.x
+            }
+            else {
+                for node in nodes(at: location) {
+                    if node.name == "playLabel" {
+                        playingGame = true
+                        node.alpha = 0
+                        score = 0
+                        lives = 3
+                        updateLabels()
+                        kickBall()
+                    }
+                }
+            }
         }
     }
-    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for touch in touches {
-            let location = touch.location(in: self)
-            paddle.position.x = location.x
+        
+        
+        override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+            for touch in touches {
+                let location = touch.location(in: self)
+                if playingGame {
+                    paddle.position.x = location.x
+            }
+        }
+    }
+    
+    
+    func didBegin(_ contact: SKPhysicsContact) {
+        if contact.bodyA.node?.name == "brick" || contact.bodyB.node?.name == "brick" {
+            gameOver(winner: true)
+        }
+        if contact.bodyA.node?.name == "loseZone" || contact.bodyB.node?.name == "loseZone" {
+           gameOver(winner: false)
+        }
+    }
+    
+    func gameOver(winner: Bool) {
+        playingGame = false
+        playLabel.alpha = 1
+        resetGame()
+        if winner {
+            playLabel.text = "You win! Tap to play again"
+        }
+        else{
+            playLabel.text = "You're a noob why you are playing this game?"
         }
     }
 }
